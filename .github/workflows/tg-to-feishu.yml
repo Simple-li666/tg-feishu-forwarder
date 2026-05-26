@@ -28,7 +28,30 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Check required secrets
+        id: check_secrets
+        env:
+          TG_API_ID: ${{ secrets.TG_API_ID }}
+          TG_API_HASH: ${{ secrets.TG_API_HASH }}
+          TG_STRING_SESSION: ${{ secrets.TG_STRING_SESSION }}
+          TG_CHAT_IDS: ${{ secrets.TG_CHAT_IDS }}
+          FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+        run: |
+          missing=0
+          for name in TG_API_ID TG_API_HASH TG_STRING_SESSION TG_CHAT_IDS FEISHU_WEBHOOK; do
+            if [ -z "${!name}" ]; then
+              echo "::notice::$name is not configured; skipping this run."
+              missing=1
+            fi
+          done
+          if [ "$missing" -eq 1 ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Poll Telegram and send to Feishu
+        if: steps.check_secrets.outputs.ready == 'true'
         env:
           TG_API_ID: ${{ secrets.TG_API_ID }}
           TG_API_HASH: ${{ secrets.TG_API_HASH }}
@@ -40,6 +63,7 @@ jobs:
         run: python scripts/poll_tg_to_feishu.py
 
       - name: Commit state
+        if: steps.check_secrets.outputs.ready == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
