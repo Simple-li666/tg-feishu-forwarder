@@ -1,0 +1,48 @@
+name: TG to Feishu
+
+on:
+  schedule:
+    - cron: "3/10 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: tg-to-feishu
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  forward:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Poll Telegram and send to Feishu
+        env:
+          TG_API_ID: ${{ secrets.TG_API_ID }}
+          TG_API_HASH: ${{ secrets.TG_API_HASH }}
+          TG_STRING_SESSION: ${{ secrets.TG_STRING_SESSION }}
+          TG_CHAT_IDS: ${{ secrets.TG_CHAT_IDS }}
+          FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+          FEISHU_SECRET: ${{ secrets.FEISHU_SECRET }}
+          BATCH_LIMIT: "50"
+        run: python scripts/poll_tg_to_feishu.py
+
+      - name: Commit state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state/last_ids.json
+          git diff --cached --quiet || git commit -m "Update Telegram forwarding state"
+          git push
