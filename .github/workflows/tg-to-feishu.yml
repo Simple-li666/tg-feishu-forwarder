@@ -2,7 +2,7 @@ name: TG to Feishu
 
 on:
   schedule:
-    - cron: "3/10 * * * *"
+    - cron: "2/5 * * * *"
   workflow_dispatch:
 
 concurrency:

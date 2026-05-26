@@ -7,7 +7,7 @@
 ## 文件说明
 
 ```text
-.github/workflows/tg-to-feishu.yml  # 每 10 分钟运行一次
+.github/workflows/tg-to-feishu.yml  # 每 5 分钟运行一次
 scripts/make_session.py             # 本地生成 Telegram StringSession
 scripts/list_dialogs.py             # 本地列出可见群组和 ID
 scripts/poll_tg_to_feishu.py        # Actions 实际运行的转发脚本
@@ -56,7 +56,7 @@ python scripts/make_session.py
 
 ## 首次运行
 
-第一次运行 workflow 默认只初始化游标，不转发历史消息，避免刷屏。初始化后，在 Telegram 群里发一条新消息，再手动运行一次 workflow，就应该能在飞书收到。
+第一次运行 workflow 默认只初始化游标，不转发历史消息，避免刷屏。初始化后，在 Telegram 群里发一条新消息，再手动运行一次 workflow，或等下一次 5 分钟定时任务，就应该能在飞书收到。
 
 要手动运行：
 
