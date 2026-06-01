@@ -1,9 +1,12 @@
 name: TG to Feishu
 
 on:
-  schedule:
-    - cron: "*/5 * * * *"
   workflow_dispatch:
+    inputs:
+      trigger_source:
+        description: "Who triggered this run"
+        required: false
+        default: "manual"
 
 concurrency:
   group: tg-to-feishu
@@ -19,6 +22,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Show trigger source
+        run: echo "Triggered by ${{ github.event.inputs.trigger_source || 'manual' }}"
 
       - name: Set up Python
         uses: actions/setup-python@v5

@@ -1,13 +1,14 @@
 # Telegram 群消息转发到飞书
 
-这个仓库用 GitHub Actions 定时轮询 Telegram 群消息，并通过飞书自定义机器人转发到飞书群。
+这个仓库用 GitHub Actions 轮询 Telegram 群消息，并通过飞书自定义机器人转发到飞书群。触发方式由外部 HTTP cron 服务调用 GitHub `workflow_dispatch` API。
 
 适合场景：Telegram 群不能加机器人，但你的个人账号能看到群消息；你接受 5 到 15 分钟级别延迟。
 
 ## 文件说明
 
 ```text
-.github/workflows/tg-to-feishu.yml  # 每 5 分钟运行一次
+.github/workflows/tg-to-feishu.yml  # GitHub Actions 转发任务
+EXTERNAL_CRON_SETUP.md              # cron-job.org 每 5 分钟触发配置
 scripts/make_session.py             # 本地生成 Telegram StringSession
 scripts/list_dialogs.py             # 本地列出可见群组和 ID
 scripts/poll_tg_to_feishu.py        # Actions 实际运行的转发脚本
@@ -56,7 +57,7 @@ python scripts/make_session.py
 
 ## 首次运行
 
-第一次运行 workflow 默认只初始化游标，不转发历史消息，避免刷屏。初始化后，在 Telegram 群里发一条新消息，再手动运行一次 workflow，或等下一次 5 分钟定时任务，就应该能在飞书收到。
+第一次运行 workflow 默认只初始化游标，不转发历史消息，避免刷屏。初始化后，在 Telegram 群里发一条新消息，再手动运行一次 workflow，或等 cron-job.org 下一次触发，就应该能在飞书收到。
 
 要手动运行：
 
@@ -64,9 +65,20 @@ python scripts/make_session.py
 Actions -> TG to Feishu -> Run workflow
 ```
 
+## 每 5 分钟自动触发
+
+GitHub 自带的 `schedule` 触发可能延迟或不触发，所以这里使用 cron-job.org 每 5 分钟调用 GitHub `workflow_dispatch` API。
+
+配置步骤见：
+
+```text
+EXTERNAL_CRON_SETUP.md
+```
+
 ## 安全建议
 
 - 仓库保持私有。
 - Telegram 开启两步验证。
 - 不要在 issue、README、commit 或 Actions 日志里打印 `TG_STRING_SESSION`、`TG_API_HASH`、飞书 webhook。
+- cron-job.org 里的 GitHub token 只给这个仓库的 `Actions: Read and write` 权限。
 - 如果密钥曾经出现在公开聊天或截图里，建议轮换 Telegram app 的 `api_hash` 和飞书 webhook。
