@@ -65,17 +65,58 @@ def feishu_sign(timestamp, secret):
     return base64.b64encode(digest).decode("utf-8")
 
 
-def send_feishu(text):
+def truncate_text(text):
+    if len(text) <= MAX_TEXT_LENGTH:
+        return text
+    return text[: MAX_TEXT_LENGTH - 20] + "\n...[内容过长已截断]"
+
+
+def feishu_text_payload(text):
+    return {
+        "msg_type": "text",
+        "content": {"text": truncate_text(text)},
+    }
+
+
+def text_node(text, bold=False):
+    node = {"tag": "text", "text": text}
+    if bold:
+        node["style"] = ["bold"]
+    return node
+
+
+def build_post(title, sender, message_id, body, link):
+    content = [
+        [text_node("群组：", bold=True), text_node(title)],
+        [text_node("发送者：", bold=True), text_node(sender)],
+        [text_node("消息ID：", bold=True), text_node(str(message_id))],
+        [text_node(" ")],
+    ]
+
+    for line in truncate_text(body).splitlines() or [""]:
+        content.append([text_node(line or " ")])
+
+    if link:
+        content.append([text_node("链接：", bold=True), {"tag": "a", "text": link, "href": link}])
+
+    return {
+        "zh_cn": {
+            "title": "TG -> 飞书",
+            "content": content,
+        }
+    }
+
+
+def feishu_post_payload(title, sender, message_id, body, link):
+    return {
+        "msg_type": "post",
+        "content": {"post": build_post(title, sender, message_id, body, link)},
+    }
+
+
+def send_feishu(payload, fallback_text):
     webhook = required_env("FEISHU_WEBHOOK")
     secret = os.getenv("FEISHU_SECRET", "").strip()
-
-    if len(text) > MAX_TEXT_LENGTH:
-        text = text[: MAX_TEXT_LENGTH - 20] + "\n...[内容过长已截断]"
-
-    payload = {
-        "msg_type": "text",
-        "content": {"text": text},
-    }
 
     if secret:
         timestamp = str(int(time.time()))
@@ -87,6 +128,9 @@ def send_feishu(text):
     data = response.json()
     code = data.get("code", data.get("StatusCode", 0))
     if code != 0:
+        if payload.get("msg_type") == "post":
+            send_feishu(feishu_text_payload(fallback_text), fallback_text)
+            return
         raise RuntimeError(f"Feishu webhook failed: {data}")
 
 
@@ -167,7 +211,7 @@ async def format_message(entity, message):
     link = build_message_link(entity, message.id)
     link_line = f"\n链接：{link}" if link else ""
 
-    return (
+    fallback_text = (
         "[TG -> 飞书]\n"
         f"群组：{title}\n"
         f"发送者：{sender}\n"
@@ -175,6 +219,8 @@ async def format_message(entity, message):
         f"{body}"
         f"{link_line}"
     )
+    payload = feishu_post_payload(title, sender, message.id, body, link)
+    return payload, fallback_text
 
 
 async def initial_latest_id(client, entity):
@@ -214,7 +260,8 @@ async def process_chat(client, chat_ref, state):
     max_id = last_id
     sent = 0
     for message in await fetch_messages(client, entity, last_id):
-        send_feishu(await format_message(entity, message))
+        payload, fallback_text = await format_message(entity, message)
+        send_feishu(payload, fallback_text)
         max_id = max(max_id, message.id)
         sent += 1
 
