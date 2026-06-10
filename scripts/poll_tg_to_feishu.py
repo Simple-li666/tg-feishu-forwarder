@@ -87,17 +87,17 @@ def text_node(text, bold=False):
 
 def build_post(title, sender, message_id, body, link):
     content = [
-        [text_node("群组：", bold=True), text_node(title)],
-        [text_node("发送者：", bold=True), text_node(sender)],
-        [text_node("消息ID：", bold=True), text_node(str(message_id))],
+        [text_node("群组："), text_node(title)],
+        [text_node("发送者："), text_node(sender)],
+        [text_node("消息ID："), text_node(str(message_id))],
         [text_node(" ")],
     ]
 
     for line in truncate_text(body).splitlines() or [""]:
-        content.append([text_node(line or " ")])
+        content.append([text_node(line or " ", bold=True)])
 
     if link:
-        content.append([text_node("链接：", bold=True), {"tag": "a", "text": link, "href": link}])
+        content.append([text_node("链接："), {"tag": "a", "text": link, "href": link}])
 
     return {
         "zh_cn": {
