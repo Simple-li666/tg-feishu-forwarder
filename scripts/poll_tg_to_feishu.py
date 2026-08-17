@@ -78,39 +78,58 @@ def feishu_text_payload(text):
     }
 
 
-def text_node(text, bold=False):
-    node = {"tag": "text", "text": text}
-    if bold:
-        node["style"] = ["bold"]
-    return node
+def escape_markdown(text):
+    escaped = str(text).replace("\\", "\\\\")
+    for char in "`*_{}[]()#+-.!|>~":
+        escaped = escaped.replace(char, f"\\{char}")
+    return escaped
 
 
-def build_post(title, sender, message_id, body, link):
-    content = [
-        [text_node("群组："), text_node(title, bold=True)],
-        [text_node("发送者："), text_node(sender)],
-        [text_node("消息ID："), text_node(str(message_id))],
-        [text_node(" ")],
-    ]
-
-    for line in truncate_text(body).splitlines() or [""]:
-        content.append([text_node(line or " ", bold=True)])
-
-    if link:
-        content.append([text_node("链接："), {"tag": "a", "text": link, "href": link}])
-
+def markdown_element(content):
     return {
-        "zh_cn": {
-            "title": "TG -> 飞书",
-            "content": content,
-        }
+        "tag": "markdown",
+        "content": content,
+        "text_align": "left",
+        "text_size": "normal_v2",
+        "margin": "0px 0px 0px 0px",
     }
 
 
-def feishu_post_payload(title, sender, message_id, body, link):
+def build_card(title, sender, message_id, body, link):
+    metadata = (
+        f"群组： **{escape_markdown(title)}**\n"
+        f"发送者： {escape_markdown(sender)}\n"
+        f"消息ID： {message_id}"
+    )
+    body_markdown = "\n".join(
+        f"**{escape_markdown(line or ' ')}**"
+        for line in truncate_text(body).splitlines() or [""]
+    )
+    elements = [markdown_element(metadata), markdown_element(body_markdown)]
+
+    if link:
+        elements.append(markdown_element(f"[链接：{link}]({link})"))
+
     return {
-        "msg_type": "post",
-        "content": {"post": build_post(title, sender, message_id, body, link)},
+        "schema": "2.0",
+        "config": {"update_multi": True},
+        "body": {
+            "direction": "vertical",
+            "padding": "12px 12px 12px 12px",
+            "elements": elements,
+        },
+        "header": {
+            "title": {"tag": "plain_text", "content": "TG -> 飞书"},
+            "template": "blue",
+            "padding": "12px 12px 12px 12px",
+        },
+    }
+
+
+def feishu_card_payload(title, sender, message_id, body, link):
+    return {
+        "msg_type": "interactive",
+        "card": build_card(title, sender, message_id, body, link),
     }
 
 
@@ -128,7 +147,7 @@ def send_feishu(payload, fallback_text):
     data = response.json()
     code = data.get("code", data.get("StatusCode", 0))
     if code != 0:
-        if payload.get("msg_type") == "post":
+        if payload.get("msg_type") == "interactive":
             send_feishu(feishu_text_payload(fallback_text), fallback_text)
             return
         raise RuntimeError(f"Feishu webhook failed: {data}")
@@ -219,7 +238,7 @@ async def format_message(entity, message):
         f"{body}"
         f"{link_line}"
     )
-    payload = feishu_post_payload(title, sender, message.id, body, link)
+    payload = feishu_card_payload(title, sender, message.id, body, link)
     return payload, fallback_text
 
 
