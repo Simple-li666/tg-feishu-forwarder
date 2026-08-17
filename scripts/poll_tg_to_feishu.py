@@ -87,7 +87,7 @@ def text_node(text, bold=False):
 
 def build_post(title, sender, message_id, body, link):
     content = [
-        [text_node("群组："), text_node(title)],
+        [text_node("群组："), text_node(title, bold=True)],
         [text_node("发送者："), text_node(sender)],
         [text_node("消息ID："), text_node(str(message_id))],
         [text_node(" ")],
