@@ -45,8 +45,9 @@ def save_state(state):
 
 def parse_chat_refs():
     raw = required_env("TG_CHAT_IDS")
+    separator = ";" if ";" in raw else ","
     refs = []
-    for item in raw.split(","):
+    for item in raw.split(separator):
         ref = item.strip()
         if not ref:
             continue
