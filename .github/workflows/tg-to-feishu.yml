@@ -22,6 +22,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Show trigger source
         run: echo "Triggered by ${{ github.event.inputs.trigger_source || 'manual' }}"
@@ -33,6 +35,9 @@ jobs:
 
       - name: Install dependencies
         run: pip install -r requirements.txt
+
+      - name: Test message digest rules
+        run: python -m unittest discover -s tests -v
 
       - name: Check required secrets
         id: check_secrets
@@ -65,14 +70,16 @@ jobs:
           TG_CHAT_IDS: ${{ secrets.TG_CHAT_IDS }}
           FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
           FEISHU_SECRET: ${{ secrets.FEISHU_SECRET }}
-          BATCH_LIMIT: "50"
+          BATCH_LIMIT: "200"
         run: python scripts/poll_tg_to_feishu.py
 
       - name: Commit state
-        if: steps.check_secrets.outputs.ready == 'true'
+        if: always() && steps.check_secrets.outputs.ready == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add state/last_ids.json
           git diff --cached --quiet || git commit -m "Update Telegram forwarding state"
-          git push
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main

@@ -12,11 +12,16 @@ from telethon import TelegramClient, utils
 from telethon.errors import RPCError
 from telethon.sessions import StringSession
 
+from message_digest import (
+    DIGEST_SECONDS, Record, ingest, merge_records, prepare_state,
+    priority_labels, render_pages,
+)
 
 STATE_PATH = Path("state/last_ids.json")
-BATCH_LIMIT = int(os.getenv("BATCH_LIMIT", "50"))
+BATCH_LIMIT = int(os.getenv("BATCH_LIMIT", "200"))
 MAX_TEXT_LENGTH = int(os.getenv("MAX_TEXT_LENGTH", "3500"))
 FORWARD_INITIAL = os.getenv("FORWARD_INITIAL", "0") == "1"
+LAST_SEND = 0.0
 
 
 def required_env(name):
@@ -37,10 +42,12 @@ def load_state():
 
 def save_state(state):
     STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    STATE_PATH.write_text(
+    temporary = STATE_PATH.with_suffix(".tmp")
+    temporary.write_text(
         json.dumps(state, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
+    temporary.replace(STATE_PATH)
 
 
 def parse_chat_refs():
@@ -66,75 +73,15 @@ def feishu_sign(timestamp, secret):
     return base64.b64encode(digest).decode("utf-8")
 
 
-def truncate_text(text):
-    if len(text) <= MAX_TEXT_LENGTH:
-        return text
-    return text[: MAX_TEXT_LENGTH - 20] + "\n...[内容过长已截断]"
-
-
 def feishu_text_payload(text):
     return {
         "msg_type": "text",
-        "content": {"text": truncate_text(text)},
-    }
-
-
-def escape_markdown(text):
-    escaped = str(text).replace("\\", "\\\\")
-    for char in "`*_{}[]()#+-.!|>~":
-        escaped = escaped.replace(char, f"\\{char}")
-    return escaped
-
-
-def markdown_element(content):
-    return {
-        "tag": "markdown",
-        "content": content,
-        "text_align": "left",
-        "text_size": "normal_v2",
-        "margin": "0px 0px 0px 0px",
-    }
-
-
-def build_card(title, sender, message_id, body, link):
-    metadata = (
-        f"群组： **{escape_markdown(title)}**\n"
-        f"发送者： {escape_markdown(sender)}\n"
-        f"消息ID： {message_id}"
-    )
-    body_markdown = "\n".join(
-        f"**{escape_markdown(line or ' ')}**"
-        for line in truncate_text(body).splitlines() or [""]
-    )
-    elements = [markdown_element(metadata), markdown_element(body_markdown)]
-
-    if link:
-        elements.append(markdown_element(f"[链接：{link}]({link})"))
-
-    return {
-        "schema": "2.0",
-        "config": {"update_multi": True},
-        "body": {
-            "direction": "vertical",
-            "padding": "12px 12px 12px 12px",
-            "elements": elements,
-        },
-        "header": {
-            "title": {"tag": "plain_text", "content": "TG -> 飞书"},
-            "template": "blue",
-            "padding": "12px 12px 12px 12px",
-        },
-    }
-
-
-def feishu_card_payload(title, sender, message_id, body, link):
-    return {
-        "msg_type": "interactive",
-        "card": build_card(title, sender, message_id, body, link),
+        "content": {"text": text},
     }
 
 
 def send_feishu(payload, fallback_text):
+    global LAST_SEND
     webhook = required_env("FEISHU_WEBHOOK")
     secret = os.getenv("FEISHU_SECRET", "").strip()
 
@@ -143,15 +90,20 @@ def send_feishu(payload, fallback_text):
         payload["timestamp"] = timestamp
         payload["sign"] = feishu_sign(timestamp, secret)
 
+    time.sleep(max(0, 0.8 - (time.monotonic() - LAST_SEND)))
+    LAST_SEND = time.monotonic()
     response = requests.post(webhook, json=payload, timeout=15)
     response.raise_for_status()
     data = response.json()
-    code = data.get("code", data.get("StatusCode", 0))
+    code = data.get("code", data.get("StatusCode"))
     if code != 0:
         if payload.get("msg_type") == "interactive":
-            send_feishu(feishu_text_payload(fallback_text), fallback_text)
+            print(f"::warning::Feishu card rejected (code={code}); sending plain text.")
+            for offset in range(0, len(fallback_text), MAX_TEXT_LENGTH):
+                chunk = fallback_text[offset:offset + MAX_TEXT_LENGTH]
+                send_feishu(feishu_text_payload(chunk), chunk)
             return
-        raise RuntimeError(f"Feishu webhook failed: {data}")
+        raise RuntimeError(f"Feishu webhook failed (code={code})")
 
 
 def entity_title(entity, fallback):
@@ -176,6 +128,8 @@ async def resolve_entity(client, chat_ref):
     wanted = normalize(chat_ref)
     async for dialog in client.iter_dialogs():
         entity = dialog.entity
+        if isinstance(chat_ref, int) and utils.get_peer_id(entity) == chat_ref:
+            return entity
         candidates = [
             dialog.name,
             getattr(entity, "title", None),
@@ -217,32 +171,6 @@ async def sender_name(message):
     return full_name or (f"@{username}" if username else str(getattr(sender, "id", "unknown")))
 
 
-async def format_message(entity, message):
-    title = entity_title(entity, "unknown")
-    sender = await sender_name(message)
-    body = message.raw_text
-
-    if not body:
-        if message.media:
-            body = "[非文本消息，可能是图片、文件、语音、贴纸或投票]"
-        else:
-            body = "[空消息]"
-
-    link = build_message_link(entity, message.id)
-    link_line = f"\n链接：{link}" if link else ""
-
-    fallback_text = (
-        "[TG -> 飞书]\n"
-        f"群组：{title}\n"
-        f"发送者：{sender}\n"
-        f"消息ID：{message.id}\n\n"
-        f"{body}"
-        f"{link_line}"
-    )
-    payload = feishu_card_payload(title, sender, message.id, body, link)
-    return payload, fallback_text
-
-
 async def initial_latest_id(client, entity):
     messages = await client.get_messages(entity, limit=1)
     return messages[0].id if messages else 0
@@ -264,11 +192,27 @@ async def fetch_messages(client, entity, last_id):
     return messages
 
 
-async def process_chat(client, chat_ref, state):
+async def as_record(entity, message, previous_id=None):
+    body = message.raw_text or ("[非文本消息，请查看 Telegram 原消息]" if message.media else "[空消息]")
+    return Record(
+        id=message.id,
+        sender_id=message.sender_id,
+        timestamp=message.date.timestamp(),
+        text=body,
+        sender=await sender_name(message),
+        reply_to=message.reply_to_msg_id,
+        previous_id=previous_id,
+        media=bool(message.media),
+        link=build_message_link(entity, message.id),
+    )
+
+
+async def process_chat(client, chat_ref, state, now=None):
+    now = time.time() if now is None else now
     entity = await resolve_entity(client, chat_ref)
     peer_key = str(utils.get_peer_id(entity))
     title = entity_title(entity, chat_ref)
-    previous = state.get(peer_key, {})
+    previous = state.setdefault(peer_key, {"title": title, "last_id": 0})
     last_id = int(previous.get("last_id", 0))
 
     if last_id == 0 and not FORWARD_INITIAL:
@@ -277,16 +221,56 @@ async def process_chat(client, chat_ref, state):
         print(f"Initialized {title} at message {latest_id}; historical messages were not forwarded.")
         return
 
-    max_id = last_id
-    sent = 0
-    for message in await fetch_messages(client, entity, last_id):
-        payload, fallback_text = await format_message(entity, message)
-        send_feishu(payload, fallback_text)
-        max_id = max(max_id, message.id)
-        sent += 1
+    prepare_state(previous, now)
+    previous["title"] = title
+    fresh = await fetch_messages(client, entity, last_id)
+    records = [await as_record(entity, message) for message in fresh]
+    ingest(previous, records)
+    # Persist only IDs and fingerprints. Message text stays in Telegram, not Git.
+    save_state(state)
+    by_id = {record.id: record for record in records}
+    missing = [entry["id"] for entry in previous["pending"] if entry["id"] not in by_id]
+    for offset in range(0, len(missing), 100):
+        ids = missing[offset:offset + 100]
+        loaded = await client.get_messages(entity, ids=ids)
+        for message_id, message in zip(ids, loaded):
+            if message is None:
+                by_id[message_id] = Record(message_id, None, now, "[原消息已删除或不可读取]", "unknown")
+            else:
+                by_id[message_id] = await as_record(entity, message)
+    pending = []
+    for entry in previous["pending"]:
+        record = by_id[entry["id"]]
+        record.previous_id = entry["previous_id"]
+        pending.append(record)
+    blocks = merge_records(pending)
+    priority = []
+    ordinary = []
+    for block in blocks:
+        target = priority if priority_labels("\n".join(item.text for item in block)) else ordinary
+        target.append(block)
 
-    state[peer_key] = {"title": title, "last_id": max_id}
-    print(f"{title}: forwarded {sent} message(s), last_id={max_id}")
+    counts = {"priority": 0, "digest": 0}
+
+    def deliver(pages, kind):
+        for payload, sent_ids, fallback in pages:
+            send_feishu(payload, fallback)
+            sent = set(sent_ids)
+            previous["pending"] = [entry for entry in previous["pending"] if entry["id"] not in sent]
+            save_state(state)
+            counts[kind] += 1
+
+    deliver(render_pages(title, priority, priority=True), "priority")
+    slot = int(now // DIGEST_SECONDS)
+    if slot > previous["digest_slot"]:
+        deliver(render_pages(title, ordinary, duplicates=previous["duplicates"]), "digest")
+        previous["digest_slot"] = slot
+        previous["duplicates"] = 0
+        save_state(state)
+    print(
+        f"{title}: priority_cards={counts['priority']}, digest_cards={counts['digest']}, "
+        f"pending={len(previous['pending'])}, duplicates={previous['duplicates']}, last_id={previous['last_id']}"
+    )
 
 
 async def main():
@@ -295,12 +279,19 @@ async def main():
     session = required_env("TG_STRING_SESSION")
     chat_refs = parse_chat_refs()
     state = load_state()
-
+    failures = []
     async with TelegramClient(StringSession(session), api_id, api_hash) as client:
         for chat_ref in chat_refs:
-            await process_chat(client, chat_ref, state)
+            try:
+                await process_chat(client, chat_ref, state)
+            except Exception as error:
+                failures.append(type(error).__name__)
+                print(f"::error::Chat processing failed ({type(error).__name__}); queued messages retained.")
+            finally:
+                save_state(state)
 
-    save_state(state)
+    if failures:
+        raise RuntimeError(f"{len(failures)} chat(s) failed; pending messages will be retried next run")
 
 
 if __name__ == "__main__":
