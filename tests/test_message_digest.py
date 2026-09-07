@@ -129,7 +129,8 @@ class WorkflowTests(unittest.IsolatedAsyncioTestCase):
         self.addCleanup(self.temp.cleanup)
         self.path = Path(self.temp.name) / "state.json"
         for patcher in [patch.object(poll, "STATE_PATH", self.path),
-                        patch.object(poll.utils, "get_peer_id", return_value=-1)]:
+                        patch.object(poll.utils, "get_peer_id", return_value=-1),
+                        patch("builtins.print")]:
             patcher.start()
             self.addCleanup(patcher.stop)
         self.state = {"-1": {"title": "测试群", "last_id": 1}}
