@@ -106,8 +106,13 @@
   "-5238095947": {
     "digest_slot": 1987708,
     "duplicates": 0,
-    "last_id": 6273,
-    "pending": [],
+    "last_id": 6274,
+    "pending": [
+      {
+        "id": 6274,
+        "previous_id": 6273
+      }
+    ],
     "recent": {
       "93b8275f7d6aede41c84ceb5bab315407dca21d89ee222d7e4a56fab2722b414": 1788936399.0
     },
