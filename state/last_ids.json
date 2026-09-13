@@ -86,15 +86,20 @@
   "-5103780692": {
     "digest_slot": 1988093,
     "duplicates": 0,
-    "last_id": 6370,
+    "last_id": 6371,
     "pending": [
       {
         "id": 6370,
         "previous_id": 6369
+      },
+      {
+        "id": 6371,
+        "previous_id": 6370
       }
     ],
     "recent": {
-      "1dacedca992fa62b3f1520ada0b149fa7f8ec15f7a47fb312edbf1af19c8e450": 1789283996.0
+      "1dacedca992fa62b3f1520ada0b149fa7f8ec15f7a47fb312edbf1af19c8e450": 1789283996.0,
+      "24e8c2d8b37ba5b925b76a452c67ade74884b203be56e8cc38caa620e850d2e6": 1789284122.0
     },
     "title": "谷歌云技术支持"
   },
