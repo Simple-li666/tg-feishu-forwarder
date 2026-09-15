@@ -2,9 +2,16 @@
   "-1003200439556": {
     "digest_slot": 1988323,
     "duplicates": 0,
-    "last_id": 766,
-    "pending": [],
-    "recent": {},
+    "last_id": 767,
+    "pending": [
+      {
+        "id": 767,
+        "previous_id": 766
+      }
+    ],
+    "recent": {
+      "985127ffe05c5b0e1567e96a83a675bdc770d4d57fb9a03dedfc88c437f6933e": 1789491306.0
+    },
     "title": "新加坡接码"
   },
   "-1003826273923": {
