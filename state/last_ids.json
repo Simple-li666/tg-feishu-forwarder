@@ -22,9 +22,16 @@
   "-4594601162": {
     "digest_slot": 1988461,
     "duplicates": 0,
-    "last_id": 6407,
-    "pending": [],
-    "recent": {},
+    "last_id": 6432,
+    "pending": [
+      {
+        "id": 6432,
+        "previous_id": 6407
+      }
+    ],
+    "recent": {
+      "5359aeb3615b1c0bd56e831e00df30f3d509c0a155191110e8c3b48c41deefce": 1789615178.0
+    },
     "title": "GCP账号"
   },
   "-4801618073": {
