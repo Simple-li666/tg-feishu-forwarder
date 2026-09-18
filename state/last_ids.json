@@ -64,9 +64,7 @@
     "duplicates": 0,
     "last_id": 6457,
     "pending": [],
-    "recent": {
-      "1e9b5b4928a1f73ee2ccfa1ab60354f91c572738157d058c30120ba704e0a5c2": 1789703209.0
-    },
+    "recent": {},
     "title": "恐龙ip代理-lumi"
   },
   "-5006921990": {
@@ -108,8 +106,13 @@
   "-5238095947": {
     "digest_slot": 1988561,
     "duplicates": 0,
-    "last_id": 6453,
-    "pending": [],
+    "last_id": 6458,
+    "pending": [
+      {
+        "id": 6458,
+        "previous_id": 6453
+      }
+    ],
     "recent": {},
     "title": "am-阿里云国际站"
   },
