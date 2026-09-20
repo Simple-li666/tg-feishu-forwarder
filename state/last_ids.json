@@ -106,11 +106,15 @@
   "-5238095947": {
     "digest_slot": 1988771,
     "duplicates": 0,
-    "last_id": 6519,
-    "pending": [],
+    "last_id": 6520,
+    "pending": [
+      {
+        "id": 6520,
+        "previous_id": 6519
+      }
+    ],
     "recent": {
       "66ab7d82dd4773a9e8c1685625957f0913dfcc4344f5488c1d0a7105bf353b5a": 1789892745.0,
-      "700f14e36f7e05159451d8b7d41775aa4a8cc3575ca46ae9e46a42cc6f2bee10": 1789892708.0,
       "770308a57782161feb2eb5ef014f03754f51726db86022117b5c69d9018dca71": 1789893431.0,
       "99e8fd6dfd2b13523a4c2bb7147179599dc14d83738d3bdc77e67366abab1fa4": 1789893583.0
     },
