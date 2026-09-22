@@ -46,9 +46,16 @@
   "-4978571973": {
     "digest_slot": 1988956,
     "duplicates": 0,
-    "last_id": 6427,
-    "pending": [],
-    "recent": {},
+    "last_id": 6565,
+    "pending": [
+      {
+        "id": 6565,
+        "previous_id": 6427
+      }
+    ],
+    "recent": {
+      "8fa3bea6318a579f6bb214775e0c12a27356614d8cf813e9668ffe176eb073e7": 1790060830.0
+    },
     "title": "IPIDEA-代理-xinghuokj"
   },
   "-4980006452": {
@@ -86,11 +93,15 @@
   "-5103780692": {
     "digest_slot": 1988956,
     "duplicates": 0,
-    "last_id": 6564,
+    "last_id": 6566,
     "pending": [
       {
         "id": 6564,
         "previous_id": 6563
+      },
+      {
+        "id": 6566,
+        "previous_id": 6564
       }
     ],
     "recent": {
