@@ -62,8 +62,13 @@
   "-4992094295": {
     "digest_slot": 1989155,
     "duplicates": 0,
-    "last_id": 6465,
-    "pending": [],
+    "last_id": 6623,
+    "pending": [
+      {
+        "id": 6623,
+        "previous_id": 6465
+      }
+    ],
     "recent": {},
     "title": "恐龙ip代理-lumi"
   },
