@@ -48,9 +48,7 @@
     "duplicates": 0,
     "last_id": 6748,
     "pending": [],
-    "recent": {
-      "7841bb50b08c6b67a2e53c40d1fe23d0733c0846bdb2c32455ae4394ef21102a": 1790568259.0
-    },
+    "recent": {},
     "title": "IPIDEA-代理-xinghuokj"
   },
   "-4980006452": {
@@ -108,9 +106,16 @@
   "-5238095947": {
     "digest_slot": 1989522,
     "duplicates": 0,
-    "last_id": 6746,
-    "pending": [],
-    "recent": {},
+    "last_id": 6749,
+    "pending": [
+      {
+        "id": 6749,
+        "previous_id": 6746
+      }
+    ],
+    "recent": {
+      "7c01a4c7f094b9f2100b75af5e23574ad8c06698cc32a884b2ebf28f43901226": 1790569980.0
+    },
     "title": "am-阿里云国际站"
   },
   "-5239041587": {
