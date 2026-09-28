@@ -2,9 +2,11 @@
   "-1003200439556": {
     "digest_slot": 1989524,
     "duplicates": 0,
-    "last_id": 775,
+    "last_id": 776,
     "pending": [],
-    "recent": {},
+    "recent": {
+      "b486c8843785f9111f6b395dc51c5fbe68f478d5c3bbc35aa3c556405a581208": 1790571697.0
+    },
     "title": "新加坡接码"
   },
   "-1003826273923": {
@@ -108,9 +110,7 @@
     "duplicates": 0,
     "last_id": 6751,
     "pending": [],
-    "recent": {
-      "7c01a4c7f094b9f2100b75af5e23574ad8c06698cc32a884b2ebf28f43901226": 1790569980.0
-    },
+    "recent": {},
     "title": "am-阿里云国际站"
   },
   "-5239041587": {
