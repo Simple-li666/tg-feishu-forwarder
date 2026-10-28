@@ -146,10 +146,16 @@
     "digest_slot": 1992434,
     "duplicates": 0,
     "initialized": true,
-    "last_id": 7921,
-    "pending": [],
+    "last_id": 7922,
+    "pending": [
+      {
+        "id": 7922,
+        "previous_id": 7921
+      }
+    ],
     "recent": {
       "028d1f4a4a5b6e7c7d2382c406df77ed85349a4b69a768eb3496b44c5c152dfc": 1793190307.0,
+      "27daa35847e066de74ee02c6d10867170c381120c07a5f4e9d6459aa36261144": 1793190862.0,
       "64dfd152e1feafbbaa04e5e6539648c08c5058612c103dd35de398d7d56719e8": 1793189863.0,
       "a3b6d5fce8f304fd0cc626984eea8f873937ae987a37890f301d3b6bd3027409": 1793189722.0
     },
