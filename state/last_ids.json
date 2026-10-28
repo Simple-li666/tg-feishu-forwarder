@@ -146,9 +146,19 @@
     "digest_slot": 1992433,
     "duplicates": 0,
     "initialized": true,
-    "last_id": 7917,
-    "pending": [],
+    "last_id": 7919,
+    "pending": [
+      {
+        "id": 7918,
+        "previous_id": 7917
+      },
+      {
+        "id": 7919,
+        "previous_id": 7918
+      }
+    ],
     "recent": {
+      "64dfd152e1feafbbaa04e5e6539648c08c5058612c103dd35de398d7d56719e8": 1793189863.0,
       "a3b6d5fce8f304fd0cc626984eea8f873937ae987a37890f301d3b6bd3027409": 1793189722.0
     },
     "title": "阿里云国际站业务沟通"
