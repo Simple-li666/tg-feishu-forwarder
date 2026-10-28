@@ -123,12 +123,7 @@
     "initialized": true,
     "last_id": 7893,
     "pending": [],
-    "recent": {
-      "15e816f47558eb8f88d0f8b15ffa215ab2469484486d13af1d2e72bed9151808": 1793180996.0,
-      "3a52cdcda6a5b386dc749c5232b3f3637e8979966af59abb4b7edcc808d5e70f": 1793180945.0,
-      "d84a3f6373b8e29471b96aa05b858529f1164bdcd396f5ed6c97837115ddc17e": 1793181001.0,
-      "da7d973437aefbd6d473cc86789768b7670fd34f09eb59792abcd1948ca9974b": 1793180971.0
-    },
+    "recent": {},
     "title": "am-阿里云国际站"
   },
   "-5239041587": {
@@ -153,9 +148,21 @@
     "digest_slot": 1992425,
     "duplicates": 0,
     "initialized": true,
-    "last_id": 7646,
-    "pending": [],
-    "recent": {},
+    "last_id": 7897,
+    "pending": [
+      {
+        "id": 7896,
+        "previous_id": 7895
+      },
+      {
+        "id": 7897,
+        "previous_id": 7896
+      }
+    ],
+    "recent": {
+      "c2c2d100a9e767893beb5c55c684d36e0882f3490c3ccb83587053aab6190d71": 1793182561.0,
+      "e691e2d5e8c57897c77bb408831912fa630078be27d744ee8fccfed5aacaea39": 1793182553.0
+    },
     "title": "阿里云国际站业务沟通"
   },
   "-5565346631": {
