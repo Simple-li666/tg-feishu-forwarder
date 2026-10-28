@@ -229,6 +229,17 @@ class WorkflowTests(unittest.IsolatedAsyncioTestCase):
             send.assert_not_called()
         self.assertEqual(10, state["-1"]["last_id"])
 
+    async def test_empty_chat_initialization_does_not_skip_first_new_message(self):
+        client = FakeClient([])
+        state = {}
+        with patch.object(poll, "send_feishu") as send:
+            await poll.process_chat(client, -1, state, now=1100)
+            self.assertTrue(state["-1"]["initialized"])
+            client.messages[1] = FakeMessage(1, "需要充值1000元", at=1110)
+            await poll.process_chat(client, -1, state, now=1200)
+            self.assertEqual(1, send.call_count)
+            self.assertIn("充值", json.dumps(send.call_args.args[0], ensure_ascii=False))
+
     async def test_main_continues_other_chats_after_failure(self):
         client = AsyncMock()
         client.__aenter__.return_value = client

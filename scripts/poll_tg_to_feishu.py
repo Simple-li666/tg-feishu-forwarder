@@ -215,9 +215,9 @@ async def process_chat(client, chat_ref, state, now=None):
     previous = state.setdefault(peer_key, {"title": title, "last_id": 0})
     last_id = int(previous.get("last_id", 0))
 
-    if last_id == 0 and not FORWARD_INITIAL:
+    if last_id == 0 and not previous.get("initialized") and not FORWARD_INITIAL:
         latest_id = await initial_latest_id(client, entity)
-        state[peer_key] = {"title": title, "last_id": latest_id}
+        state[peer_key] = {"title": title, "last_id": latest_id, "initialized": True}
         print(f"Initialized {title} at message {latest_id}; historical messages were not forwarded.")
         return
 
