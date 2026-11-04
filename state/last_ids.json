@@ -119,8 +119,13 @@
     "digest_slot": 1993076,
     "duplicates": 0,
     "initialized": true,
-    "last_id": 8154,
-    "pending": [],
+    "last_id": 8155,
+    "pending": [
+      {
+        "id": 8155,
+        "previous_id": 8154
+      }
+    ],
     "recent": {},
     "title": "am-阿里云国际站"
   },
