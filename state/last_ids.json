@@ -61,8 +61,25 @@
     "digest_slot": 1993166,
     "duplicates": 0,
     "initialized": true,
-    "last_id": 8207,
-    "pending": [],
+    "last_id": 8212,
+    "pending": [
+      {
+        "id": 8209,
+        "previous_id": 8207
+      },
+      {
+        "id": 8210,
+        "previous_id": 8209
+      },
+      {
+        "id": 8211,
+        "previous_id": 8210
+      },
+      {
+        "id": 8212,
+        "previous_id": 8211
+      }
+    ],
     "recent": {},
     "title": "kk-moyulaodong"
   },
@@ -119,8 +136,13 @@
     "digest_slot": 1993166,
     "duplicates": 0,
     "initialized": true,
-    "last_id": 8208,
-    "pending": [],
+    "last_id": 8213,
+    "pending": [
+      {
+        "id": 8213,
+        "previous_id": 8208
+      }
+    ],
     "recent": {
       "47e7623a344aa956e315fcce7bee91ffd40d99becf69c40339d7b452f7db50a8": 1793848396.0
     },
