@@ -61,8 +61,21 @@
     "digest_slot": 1993179,
     "duplicates": 0,
     "initialized": true,
-    "last_id": 8217,
-    "pending": [],
+    "last_id": 8220,
+    "pending": [
+      {
+        "id": 8218,
+        "previous_id": 8217
+      },
+      {
+        "id": 8219,
+        "previous_id": 8218
+      },
+      {
+        "id": 8220,
+        "previous_id": 8219
+      }
+    ],
     "recent": {},
     "title": "kk-moyulaodong"
   },
