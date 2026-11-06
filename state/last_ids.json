@@ -25,11 +25,19 @@
     "digest_slot": 1993263,
     "duplicates": 0,
     "initialized": true,
-    "last_id": 8259,
+    "last_id": 8261,
     "pending": [
       {
         "id": 8259,
         "previous_id": 8258
+      },
+      {
+        "id": 8260,
+        "previous_id": 8259
+      },
+      {
+        "id": 8261,
+        "previous_id": 8260
       }
     ],
     "recent": {
