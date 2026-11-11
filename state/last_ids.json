@@ -25,8 +25,13 @@
     "digest_slot": 1993739,
     "duplicates": 0,
     "initialized": true,
-    "last_id": 8441,
-    "pending": [],
+    "last_id": 8455,
+    "pending": [
+      {
+        "id": 8455,
+        "previous_id": 8441
+      }
+    ],
     "recent": {
       "638378aa3ad9e8ab38edf8b4a56f555fbd84914b749808aedc0e8dddb8269fe4": 1794364745.0
     },
@@ -121,8 +126,13 @@
     "digest_slot": 1993739,
     "duplicates": 0,
     "initialized": true,
-    "last_id": 8449,
-    "pending": [],
+    "last_id": 8450,
+    "pending": [
+      {
+        "id": 8450,
+        "previous_id": 8449
+      }
+    ],
     "recent": {
       "9d73f24daafe19c23043f3d8891198a06aff9017359bcedad195cad73a33e307": 1794365392.0,
       "dcbadf1a3a49268c13d865eb40b36e811b934c39f9cd58b82c3723502ae40fc2": 1794365191.0
