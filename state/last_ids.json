@@ -25,8 +25,13 @@
     "digest_slot": 1993751,
     "duplicates": 0,
     "initialized": true,
-    "last_id": 8516,
-    "pending": [],
+    "last_id": 8517,
+    "pending": [
+      {
+        "id": 8517,
+        "previous_id": 8516
+      }
+    ],
     "recent": {},
     "title": "GCP账号"
   },
@@ -121,9 +126,7 @@
     "initialized": true,
     "last_id": 8515,
     "pending": [],
-    "recent": {
-      "8c5ea011b6c381b3263273cd60230a33aa162b32e296933263be7280ad74dd5b": 1794374456.0
-    },
+    "recent": {},
     "title": "am-阿里云国际站"
   },
   "-5239041587": {
