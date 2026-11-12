@@ -137,8 +137,13 @@
     "digest_slot": 1993864,
     "duplicates": 0,
     "initialized": true,
-    "last_id": 8620,
-    "pending": [],
+    "last_id": 8621,
+    "pending": [
+      {
+        "id": 8621,
+        "previous_id": 8620
+      }
+    ],
     "recent": {},
     "title": "linode-xiaomin"
   },
@@ -177,5 +182,8 @@
     "pending": [],
     "recent": {},
     "title": "kris-腾讯云"
+  },
+  "__control__": {
+    "cursor": 0
   }
 }
