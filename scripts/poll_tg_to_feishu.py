@@ -4,7 +4,9 @@ import hashlib
 import hmac
 import json
 import os
+import re
 import time
+from datetime import date, datetime
 from pathlib import Path
 
 import requests
@@ -13,7 +15,7 @@ from telethon.errors import RPCError
 from telethon.sessions import StringSession
 
 from message_digest import (
-    DIGEST_SECONDS, Record, ingest, merge_records, prepare_state,
+    DIGEST_SECONDS, SHANGHAI, Record, ingest, merge_records, prepare_state,
     priority_labels, render_pages,
 )
 
@@ -22,6 +24,8 @@ BATCH_LIMIT = int(os.getenv("BATCH_LIMIT", "200"))
 MAX_TEXT_LENGTH = int(os.getenv("MAX_TEXT_LENGTH", "3500"))
 FORWARD_INITIAL = os.getenv("FORWARD_INITIAL", "0") == "1"
 LAST_SEND = 0.0
+DEFAULT_TOKEN_EXPIRY = "2027-01-26"
+CONTROL_KEY = "__control__"
 
 
 def required_env(name):
@@ -176,6 +180,97 @@ async def initial_latest_id(client, entity):
     return messages[0].id if messages else 0
 
 
+async def find_control_group(client, ref):
+    wanted = normalize(ref)
+    matches = {}
+    async for dialog in client.iter_dialogs():
+        if not dialog.is_group:
+            continue
+        entity = dialog.entity
+        peer_id = utils.get_peer_id(entity)
+        if str(peer_id) == ref or wanted in {
+            normalize(dialog.name), normalize(getattr(entity, "username", None))
+        }:
+            matches[peer_id] = entity
+    if len(matches) != 1:
+        raise ValueError("ambiguous" if matches else "not_found")
+    return next(iter(matches.items()))
+
+
+def notify_control(text):
+    send_feishu(feishu_text_payload(text), text)
+
+
+async def process_saved_commands(client, state, configured_refs):
+    control = state.setdefault(CONTROL_KEY, {})
+    if "cursor" not in control:
+        control["cursor"] = await initial_latest_id(client, "me")
+        save_state(state)
+        return
+
+    async for message in client.iter_messages(
+        "me", min_id=control["cursor"], reverse=True, limit=100
+    ):
+        text = (message.raw_text or "").strip()
+        is_command = getattr(message, "out", False) and not getattr(message, "fwd_from", None)
+        add = re.fullmatch(r"添加转发\s+([^\n]{1,200})", text) if is_command else None
+        expiry = re.fullmatch(r"更新令牌到期日\s+(\d{4}-\d{2}-\d{2})", text) if is_command else None
+        notice = None
+        if add:
+            ref = add.group(1).strip()
+            try:
+                peer_id, entity = await find_control_group(client, ref)
+            except ValueError as error:
+                reason = "有多个同名群，请改用群 ID" if str(error) == "ambiguous" else "未找到该群，请检查名称或是否已加入"
+                notice = f"转发群添加失败：{ref}。{reason}。"
+            else:
+                managed = control.setdefault("managed_groups", [])
+                title = entity_title(entity, ref)
+                existing = str(peer_id) in {str(value) for value in configured_refs} or any(
+                    normalize(value) == normalize(title) for value in configured_refs
+                    if isinstance(value, str)
+                )
+                if peer_id in managed or existing:
+                    notice = f"转发群已存在：{title}。"
+                else:
+                    latest = await initial_latest_id(client, entity)
+                    state[str(peer_id)] = {"title": title, "last_id": latest, "initialized": True}
+                    managed.append(peer_id)
+                    save_state(state)
+                    notice = f"已添加转发群：{title}。从现在的新消息开始转发。"
+        elif expiry:
+            try:
+                new_date = date.fromisoformat(expiry.group(1))
+                if new_date < datetime.now(SHANGHAI).date():
+                    raise ValueError("past")
+            except ValueError:
+                notice = "令牌到期日无效，请使用未来日期，格式为 YYYY-MM-DD。"
+            else:
+                control["token_expiry"] = new_date.isoformat()
+                control.pop("last_expiry_alert", None)
+                save_state(state)
+                notice = f"令牌到期提醒已更新：{new_date.isoformat()}。"
+        if notice:
+            notify_control(notice)
+        control["cursor"] = message.id
+        save_state(state)
+
+
+def warn_token_expiry(state, today=None):
+    control = state.setdefault(CONTROL_KEY, {})
+    today = today or datetime.now(SHANGHAI).date()
+    expiry = date.fromisoformat(control.get("token_expiry", DEFAULT_TOKEN_EXPIRY))
+    days = (expiry - today).days
+    alert_key = f"{expiry.isoformat()}:{today.isoformat()}"
+    if days > 7 or control.get("last_expiry_alert") == alert_key:
+        return
+    when = f"还有 {days} 天" if days >= 0 else "已过期"
+    text = f"GitHub 定时触发令牌{when}（到期日 {expiry.isoformat()}），请及时更新 cron-job.org 中的令牌。"
+    notify_control(text)
+    control["last_expiry_alert"] = alert_key
+    save_state(state)
+
+
 async def fetch_messages(client, entity, last_id):
     if last_id == 0:
         messages = await client.get_messages(entity, limit=BATCH_LIMIT)
@@ -281,7 +376,18 @@ async def main():
     state = load_state()
     failures = []
     async with TelegramClient(StringSession(session), api_id, api_hash) as client:
-        for chat_ref in chat_refs:
+        try:
+            await process_saved_commands(client, state, chat_refs)
+        except Exception as error:
+            failures.append(type(error).__name__)
+            print(f"::error::Saved Messages processing failed ({type(error).__name__}).")
+        try:
+            warn_token_expiry(state)
+        except Exception as error:
+            failures.append(type(error).__name__)
+            print(f"::error::Token expiry reminder failed ({type(error).__name__}).")
+        managed = state.get(CONTROL_KEY, {}).get("managed_groups", [])
+        for chat_ref in list(dict.fromkeys(chat_refs + managed)):
             try:
                 await process_chat(client, chat_ref, state)
             except Exception as error:

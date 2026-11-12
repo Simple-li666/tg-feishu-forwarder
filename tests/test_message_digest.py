@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 import sys
 import tempfile
@@ -21,6 +21,9 @@ class RulesTests(unittest.TestCase):
             "报价多少": "询价",
             "麻烦帮我充值1000元": "充值",
             "余额不足，需要续费": "充值",
+            "求开 AWS 新加坡账号": "采购",
+            "GCP 折扣多少": "询价",
+            "余额不够了需要补款": "充值",
         }
         for text, expected in cases.items():
             with self.subTest(text=text):
@@ -255,6 +258,8 @@ class WorkflowTests(unittest.IsolatedAsyncioTestCase):
              patch.object(poll, "StringSession"), \
              patch.object(poll, "required_env", return_value="123"), \
              patch.object(poll, "parse_chat_refs", return_value=[-1, -2]), \
+             patch.object(poll, "process_saved_commands", new_callable=AsyncMock), \
+             patch.object(poll, "warn_token_expiry"), \
              patch.object(poll, "process_chat", side_effect=process) as process_mock:
             with self.assertRaisesRegex(RuntimeError, "1 chat"):
                 await poll.main()
@@ -262,6 +267,94 @@ class WorkflowTests(unittest.IsolatedAsyncioTestCase):
         disk = poll.load_state()
         self.assertEqual([{"id": 20}], disk["-1"]["pending"])
         self.assertEqual([], disk["-2"]["pending"])
+
+    async def test_saved_commands_add_once_and_skip_old_group_messages(self):
+        group = SimpleNamespace(title="新群", username=None, peer_id=-123)
+        messages = [SimpleNamespace(id=10, raw_text="添加转发 新群", out=True, fwd_from=None)]
+
+        class Client:
+            async def get_messages(self, entity, limit=None):
+                return messages[-1:] if entity == "me" else [SimpleNamespace(id=99)]
+
+            async def iter_messages(self, entity, min_id, reverse, limit):
+                for message in messages:
+                    if message.id > min_id:
+                        yield message
+
+            async def iter_dialogs(self):
+                yield SimpleNamespace(is_group=True, name="新群", entity=group)
+
+        client = Client()
+        with patch.object(poll.utils, "get_peer_id", side_effect=lambda entity: entity.peer_id), \
+             patch.object(poll, "send_feishu") as send:
+            await poll.process_saved_commands(client, self.state, [])
+            self.assertNotIn("-123", self.state)
+            messages.extend([
+                SimpleNamespace(id=11, raw_text="添加转发 新群", out=True, fwd_from=None),
+                SimpleNamespace(id=12, raw_text="添加转发 新群", out=True, fwd_from=None),
+                SimpleNamespace(id=13, raw_text="添加转发 其他群", out=True, fwd_from=object()),
+            ])
+            await poll.process_saved_commands(client, self.state, [])
+            self.assertEqual([-123], self.state[poll.CONTROL_KEY]["managed_groups"])
+            self.assertEqual(99, self.state["-123"]["last_id"])
+            self.assertEqual(2, send.call_count)
+            self.assertIn("已存在", send.call_args.args[1])
+            await poll.process_saved_commands(client, poll.load_state(), [])
+            self.assertEqual(2, send.call_count)
+
+    async def test_saved_command_notification_failure_preserves_added_group(self):
+        group = SimpleNamespace(title="新群", username=None, peer_id=-123)
+        command = SimpleNamespace(id=11, raw_text="添加转发 新群", out=True, fwd_from=None)
+        self.state[poll.CONTROL_KEY] = {"cursor": 10}
+
+        class Client:
+            async def get_messages(self, entity, limit=None):
+                return [SimpleNamespace(id=99)]
+
+            async def iter_messages(self, entity, min_id, reverse, limit):
+                if command.id > min_id:
+                    yield command
+
+            async def iter_dialogs(self):
+                yield SimpleNamespace(is_group=True, name="新群", entity=group)
+
+        with patch.object(poll.utils, "get_peer_id", side_effect=lambda entity: entity.peer_id), \
+             patch.object(poll, "send_feishu", side_effect=[TimeoutError(), None]) as send:
+            with self.assertRaises(TimeoutError):
+                await poll.process_saved_commands(Client(), self.state, [])
+            state = poll.load_state()
+            self.assertEqual(10, state[poll.CONTROL_KEY]["cursor"])
+            self.assertEqual([-123], state[poll.CONTROL_KEY]["managed_groups"])
+            await poll.process_saved_commands(Client(), state, [])
+            self.assertEqual(11, poll.load_state()[poll.CONTROL_KEY]["cursor"])
+            self.assertEqual(2, send.call_count)
+            self.assertIn("已存在", send.call_args.args[1])
+
+    async def test_same_name_groups_are_not_guessed(self):
+        class Client:
+            async def iter_dialogs(self):
+                for peer in [-2, -3]:
+                    yield SimpleNamespace(is_group=True, name="同名群",
+                                          entity=SimpleNamespace(peer_id=peer, username=None))
+
+        with patch.object(poll.utils, "get_peer_id", side_effect=lambda entity: entity.peer_id):
+            with self.assertRaisesRegex(ValueError, "ambiguous"):
+                await poll.find_control_group(Client(), "同名群")
+            peer, _ = await poll.find_control_group(Client(), "-2")
+            self.assertEqual(-2, peer)
+
+    def test_expiry_reminder_once_a_day_and_retry_after_failure(self):
+        state = {poll.CONTROL_KEY: {"token_expiry": "2027-01-26"}}
+        with patch.object(poll, "send_feishu", side_effect=[TimeoutError(), None, None]) as send:
+            poll.warn_token_expiry(state, date(2027, 1, 18))
+            send.assert_not_called()
+            with self.assertRaises(TimeoutError):
+                poll.warn_token_expiry(state, date(2027, 1, 19))
+            poll.warn_token_expiry(state, date(2027, 1, 19))
+            poll.warn_token_expiry(state, date(2027, 1, 19))
+            self.assertEqual(2, send.call_count)
+            poll.warn_token_expiry(state, date(2027, 1, 20))
+            self.assertEqual(3, send.call_count)
 
     def test_missing_success_code_is_not_acknowledged(self):
         malformed = SimpleNamespace(raise_for_status=lambda: None, json=lambda: {})

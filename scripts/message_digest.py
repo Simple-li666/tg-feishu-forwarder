@@ -31,21 +31,21 @@ class Record:
 
 def priority_labels(text):
     compact = re.sub(r"\s+", "", text).casefold()
-    buyer = re.search(r"求购|采购|想买|要买|收购|我需要|想充值|帮我|谁能|有没有|询价", compact)
-    question = re.search(r"[?？]|多少钱|什么价|怎么收费|价格多少|什么折扣|多少折|怎么充", compact)
+    buyer = re.search(r"求购|采购|想买|要买|收购|我需要|想充值|求开|想开|帮我|谁能|有没有|询价", compact)
+    question = re.search(r"[?？]|多少钱|什么价|怎么收费|价格多少|折扣多少|什么折扣|多少折|怎么充", compact)
     seller = re.search(r"长期供应|长期提供|大量出售|现货|欢迎咨询|有需要.{0,4}联系|出(?:售|一批|账号|aws|gcp)|专业代充|承接", compact)
     if seller and not buyer and not question:
         return []
     labels = []
-    if re.search(r"充值|代充|充钱|续费|余额不足|帮我充|怎么充", compact):
-        if not re.search(r"(?:不需要|不用|无需|暂不)充值", compact):
+    if re.search(r"充值|代充|充钱|续费|余额不足|余额不够|帮我充|怎么充|补款", compact):
+        if not re.search(r"(?:不需要|不用|无需|暂不)(?:充值|续费|补款)", compact):
             labels.append("充值")
     product = re.search(r"aws|gcp|腾讯|阿里|谷歌|google|云|账号|账户|服务器|机器|算力|代理|\bip\b|流量|渠道|套餐", text, re.I)
     purchase = re.search(r"求购|采购|想买|要买|收购", compact)
-    if purchase or (product and re.search(r"需要|求一个|求个|收一个|收个|急需|求推荐|有没有|有.+吗", compact)):
+    if purchase or (product and re.search(r"需要|求一个|求个|收一个|收个|急需|求推荐|求开|想开|想办|有没有|有.+吗", compact)):
         if not re.search(r"(?:不需要|不用|无需|暂不)(?:购买|采购|账号|服务器)", compact):
             labels.append("采购")
-    if re.search(r"询价|多少钱|什么价|怎么收费|价格多少|报价多少|什么折扣|多少折|求报价|报个价", compact):
+    if re.search(r"询价|多少钱|什么价|怎么收费|价格多少|报价多少|折扣多少|什么折扣|多少折|求报价|报个价|怎么报价", compact):
         labels.append("询价")
     elif product and re.search(r"报价|价格|折扣", compact) and question:
         labels.append("询价")
