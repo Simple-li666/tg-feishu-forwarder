@@ -137,8 +137,13 @@
     "digest_slot": 1994035,
     "duplicates": 0,
     "initialized": true,
-    "last_id": 8742,
-    "pending": [],
+    "last_id": 8743,
+    "pending": [
+      {
+        "id": 8743,
+        "previous_id": 8742
+      }
+    ],
     "recent": {},
     "title": "linode-xiaomin"
   },
