@@ -137,11 +137,19 @@
     "digest_slot": 1994033,
     "duplicates": 0,
     "initialized": true,
-    "last_id": 8739,
-    "pending": [],
+    "last_id": 8741,
+    "pending": [
+      {
+        "id": 8740,
+        "previous_id": 8739
+      },
+      {
+        "id": 8741,
+        "previous_id": 8740
+      }
+    ],
     "recent": {
-      "a738abdf9d819a6f39c34d3c5d4321c31e49cdbf90aa11a57ced436079712198": 1794629624.0,
-      "afc1cd89a6fe292ebe3d2c83f91edbc9e4223ef42e93298bee3b470f53f932dc": 1794628114.0
+      "a738abdf9d819a6f39c34d3c5d4321c31e49cdbf90aa11a57ced436079712198": 1794629624.0
     },
     "title": "linode-xiaomin"
   },
