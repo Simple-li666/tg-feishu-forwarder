@@ -146,9 +146,20 @@
     "digest_slot": 1994256,
     "duplicates": 0,
     "initialized": true,
-    "last_id": 8690,
-    "pending": [],
-    "recent": {},
+    "last_id": 8869,
+    "pending": [
+      {
+        "id": 8868,
+        "previous_id": 8690
+      },
+      {
+        "id": 8869,
+        "previous_id": 8868
+      }
+    ],
+    "recent": {
+      "3948faa31e4ee7734f45cd6266e40723a61bb1af4691042c76b0d987722fb9e6": 1794830832.0
+    },
     "title": "无敌福星-gcp"
   },
   "-5515683113": {
