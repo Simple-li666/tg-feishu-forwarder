@@ -3,11 +3,17 @@
     "digest_slot": 1994432,
     "duplicates": 0,
     "initialized": true,
-    "last_id": 860,
-    "pending": [],
+    "last_id": 861,
+    "pending": [
+      {
+        "id": 861,
+        "previous_id": 860
+      }
+    ],
     "recent": {
       "0d32b08e6d3caf5973e4bda62964b496cd5df2ce5808c09d0eca58189a280a1b": 1794988803.0,
-      "184e6022c5960b44043ca3621c663c225f938ce02dc38ece5dda8dc2773af12c": 1794988805.0
+      "184e6022c5960b44043ca3621c663c225f938ce02dc38ece5dda8dc2773af12c": 1794988805.0,
+      "b7edd7905b47aac986b3a4c0d0fe14ac6784a9879dd41f4fece7df0de365ac57": 1794988939.0
     },
     "title": "新加坡接码"
   },
