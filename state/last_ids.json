@@ -70,9 +70,20 @@
     "digest_slot": 1994620,
     "duplicates": 0,
     "initialized": true,
-    "last_id": 7984,
-    "pending": [],
-    "recent": {},
+    "last_id": 9083,
+    "pending": [
+      {
+        "id": 9082,
+        "previous_id": 9080
+      },
+      {
+        "id": 9083,
+        "previous_id": 9082
+      }
+    ],
+    "recent": {
+      "db5ea028cbb04116cccf9f312561596a360db3e8b20e402cf55eefb816f05809": 1795158494.0
+    },
     "title": "恐龙ip代理-lumi"
   },
   "-5006921990": {
@@ -119,11 +130,14 @@
     "digest_slot": 1994620,
     "duplicates": 0,
     "initialized": true,
-    "last_id": 9078,
-    "pending": [],
-    "recent": {
-      "a7ae4b48cebbe0cbc6f5f3c58b900a31d73ee03e5f6f8814d7addc917568a6ae": 1795156604.0
-    },
+    "last_id": 9081,
+    "pending": [
+      {
+        "id": 9081,
+        "previous_id": 9078
+      }
+    ],
+    "recent": {},
     "title": "am-阿里云国际站"
   },
   "-5239041587": {
