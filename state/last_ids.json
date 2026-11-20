@@ -128,9 +128,16 @@
     "digest_slot": 1994603,
     "duplicates": 0,
     "initialized": true,
-    "last_id": 9071,
-    "pending": [],
-    "recent": {},
+    "last_id": 9073,
+    "pending": [
+      {
+        "id": 9073,
+        "previous_id": 9072
+      }
+    ],
+    "recent": {
+      "74867a52a70735a0b27cafa0a6c1f7991d7de13e72135517a0179638fb9b8655": 1795142770.0
+    },
     "title": "阿里云国际-星期七"
   },
   "-5276657404": {
