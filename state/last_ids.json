@@ -27,9 +27,7 @@
     "initialized": true,
     "last_id": 9199,
     "pending": [],
-    "recent": {
-      "909dacd3a244c901d8b80b1a073cb65a8481d88e8614655baae2284a24efd55b": 1795434886.0
-    },
+    "recent": {},
     "title": "GCP账号"
   },
   "-4801618073": {
@@ -63,8 +61,13 @@
     "digest_slot": 1994929,
     "duplicates": 0,
     "initialized": true,
-    "last_id": 9196,
-    "pending": [],
+    "last_id": 9201,
+    "pending": [
+      {
+        "id": 9201,
+        "previous_id": 9196
+      }
+    ],
     "recent": {},
     "title": "kk-moyulaodong"
   },
