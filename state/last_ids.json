@@ -70,9 +70,16 @@
     "digest_slot": 1995383,
     "duplicates": 0,
     "initialized": true,
-    "last_id": 9337,
-    "pending": [],
-    "recent": {},
+    "last_id": 9443,
+    "pending": [
+      {
+        "id": 9443,
+        "previous_id": 9441
+      }
+    ],
+    "recent": {
+      "5d0d3993d3537e1db169562214b5fa89795d05a16eb599862eace1a65e5fb5cb": 1795844753.0
+    },
     "title": "恐龙ip代理-lumi"
   },
   "-5006921990": {
@@ -119,8 +126,13 @@
     "digest_slot": 1995383,
     "duplicates": 0,
     "initialized": true,
-    "last_id": 9439,
-    "pending": [],
+    "last_id": 9442,
+    "pending": [
+      {
+        "id": 9442,
+        "previous_id": 9439
+      }
+    ],
     "recent": {
       "62a8d6b09dc9928fd3d46df6ca71e4a6efe68bbca92ba80b01a832205202be7f": 1795843987.0,
       "6526e7999137becb930048200b8a2168f99d34aa6c1c58b149ae055cc76bdb89": 1795843958.0,
