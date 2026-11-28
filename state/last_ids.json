@@ -3,9 +3,16 @@
     "digest_slot": 1995385,
     "duplicates": 0,
     "initialized": true,
-    "last_id": 878,
-    "pending": [],
-    "recent": {},
+    "last_id": 879,
+    "pending": [
+      {
+        "id": 879,
+        "previous_id": 878
+      }
+    ],
+    "recent": {
+      "f862f6de03cfea40debf855a78fcc021427f14c166ac35ba24f42a19fad72bad": 1795846777.0
+    },
     "title": "新加坡接码"
   },
   "-1003826273923": {
@@ -72,9 +79,7 @@
     "initialized": true,
     "last_id": 9443,
     "pending": [],
-    "recent": {
-      "5d0d3993d3537e1db169562214b5fa89795d05a16eb599862eace1a65e5fb5cb": 1795844753.0
-    },
+    "recent": {},
     "title": "恐龙ip代理-lumi"
   },
   "-5006921990": {
