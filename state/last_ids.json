@@ -70,8 +70,13 @@
     "digest_slot": 1995413,
     "duplicates": 0,
     "initialized": true,
-    "last_id": 9443,
-    "pending": [],
+    "last_id": 9447,
+    "pending": [
+      {
+        "id": 9447,
+        "previous_id": 9443
+      }
+    ],
     "recent": {},
     "title": "恐龙ip代理-lumi"
   },
